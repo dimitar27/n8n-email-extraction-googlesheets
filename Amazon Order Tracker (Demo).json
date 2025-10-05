@@ -1,0 +1,207 @@
+{
+  "name": "Amazon Order Tracker (Demo)",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -432,
+        -144
+      ],
+      "id": "5ae1a427-e1ae-4682-8e05-02e78f8abb86",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cf8058da-de25-456d-b893-88f7017a291a",
+              "name": "body",
+              "value": "    Your Orders       Your Account       Buy Again    Thanks for your order, Dimitar! Completed Ordered Pending Dispatched Pending Out for delivery Pending Delivered Arriving 15 June DHL Packstation 155, Packstation 155, Ostseestr. 107-111, Berlin, 10409 Order # ‫305-1061581-9361139 View or edit order    LG Electronics 32SR50F-W.AEU Full HD Multimedia IPS Monitor 32\" (80 cm), 1920 x 1080, 16:9, 8 ms GtG, 60 Hz, sRGB, HDR10, webOS 23, LG ThinQ, Filcker Safe - White  Sold by CHELSEA JADE LIMITED   Condition: New   Quantity: 1   €988     Total\t€203   Amazon.de is a trading name for Amazon EU Sarl, for Amazon Europe Core Sarl, for Amazon Media EU Sarl and for Amazon EU Sarl, all of which have their registered office at 38 avenue John F. Kennedy, L-1855 Luxembourg and for the Amazon Digital Germany GmbH, with registered office at Domagkstr. 28, 80807 Munich, Germany. ©2025 Amazon.com, Inc. or its affiliates. Amazon and all related marks are trademarks of Amazon.com, Inc. or its affiliates. This e-mail is only an acknowledgement of receipt of your order. Your contract to purchase these items is not complete until we send you an e-mail notifying you that the items have been dispatched.  Fulfilled By Amazon (usually referred to as FBA) items are generally sold by third-party sellers but stored in an Amazon Fulfilment Centre and sent to you from there. Items which are sold by Warehouse Deals are also labelled Fulfilled by Amazon. Warehouse Deals is a trading name for Amazon EU Sarl, and is part of the Amazon.com group.  If your item(s) are purchased from Amazon Marketplace, the seller may request additional information such as the VAT number or your VAT code, in order to issue a valid invoice.  Amazon.de",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -176,
+        -144
+      ],
+      "id": "e930207d-19b3-4545-ae70-21f216ddd1a1",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Get the email text from previous node\nlet text = ($input.item.json.body || \"\").toString();\n\n// 2. Clean up the text a bit\ntext = text\n  .replace(/\\r\\n/g, \"\\n\")          // normalize newlines\n  .replace(/\\s+/g, \" \")            // collapse whitespace\n  .replace(/[\\u200E\\u200F]/g, \"\")  // remove hidden chars\n  .trim();\n\n// 3. Helper function to extract between two keywords\nfunction extractBetween(str, start, end) {\n  const s = str.indexOf(start);\n  if (s === -1) return \"\";\n  const e = str.indexOf(end, s + start.length);\n  if (e === -1) return str.substring(s + start.length).trim();\n  return str.substring(s + start.length, e).trim();\n}\n\n// 4. Extract fields by keywords\nconst ORDER_ID = extractBetween(text, \"Order #\", \"View\").split(\" \")[0] || \"\";\nconst ITEM_NAME = extractBetween(text, \"View or edit order\", \"Sold by\").trim();\nconst DELIVERY_DATE = extractBetween(text, \"Arriving\", \"DHL\").trim();\nconst DELIVERY_LOCATION = extractBetween(text, \"DHL\", \"Order #\").trim();\nconst QUANTITY = extractBetween(text, \"Quantity:\", \"€\").split(\" \")[0] || \"\";\nconst TOTAL_PRICE = extractBetween(text, \"Total\", \"Amazon\").split(\" \")[0] || \"\";\n\n// 5. Return clean structured output\nreturn [{\n  json: {\n    ORDER_ID,\n    ITEM_NAME,\n    DELIVERY_DATE,\n    DELIVERY_LOCATION,\n    QUANTITY,\n    TOTAL_PRICE\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32,
+        -144
+      ],
+      "id": "2259bd69-4cb4-4e7f-83eb-9c6fb28996e8",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "10n5DmwhjZRIPYMYSMSva0D5rLdWQN3yngD8E9PI0JfY",
+          "mode": "list",
+          "cachedResultName": "Amazon Order Tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/10n5DmwhjZRIPYMYSMSva0D5rLdWQN3yngD8E9PI0JfY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Sheet1",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ORDER_ID ": "={{$json.ORDER_ID}}",
+            "ITEM_NAME": "={{$json.ITEM_NAME}}",
+            "DELIVERY_DATE": "={{$json.DELIVERY_DATE}}",
+            "DELIVERY_LOCATION": "={{$json.DELIVERY_LOCATION}}",
+            "QUANTITY": "={{$json.QUANTITY}}",
+            "TOTAL_PRICE": "={{$json.TOTAL_PRICE}}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ORDER_ID ",
+              "displayName": "ORDER_ID ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ITEM_NAME",
+              "displayName": "ITEM_NAME",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "DELIVERY_DATE",
+              "displayName": "DELIVERY_DATE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "DELIVERY_LOCATION",
+              "displayName": "DELIVERY_LOCATION",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "QUANTITY",
+              "displayName": "QUANTITY",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "TOTAL_PRICE",
+              "displayName": "TOTAL_PRICE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        272,
+        -144
+      ],
+      "id": "67866c2d-f9e2-493f-b1e5-fa16658a6e8f",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "LsUNk4gU78dYA5ra",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ba4d92fb-32d7-4405-a730-30cac5f3816b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3a227aa2efa62777d2ca4ee7cd2976b6c6c9890eb3c4151dfab320ad05858941"
+  },
+  "id": "OykNQOyONqFqeAgS",
+  "tags": []
+}
